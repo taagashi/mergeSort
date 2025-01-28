@@ -52,8 +52,13 @@ void mergeSort(int vetor[], int inicio, int fim) {
     if (fim - inicio > 0) {
         int meio = inicio + (fim - inicio) / 2;
 
+        // chamada recursiva para a parte esquerda do vetor
         mergeSort(vetor, inicio, meio);
+
+        // chamada recursiva para a parte direita do vetor
         mergeSort(vetor, meio + 1, fim);
+
+        // quando a o mergeSort da esquerda e direita for finalizado, os subarrays serão ordenados aqui, até chegar no vetor colocado no main
         mesclar(vetor, inicio, meio, fim);
     }
 }
