@@ -1,130 +1,101 @@
 #include <iostream>
-#include<cstdlib>
-#include<ctime>
+#include <cstdlib>
+#include <ctime>
 #include <chrono>
+
 using namespace std;
 
 void preencherVetor(int*, int);
 void imprimirArray(int*, int, string);
 void resolverCasos(int, string);
-void mergeSort(int[], int, int);
-void mesclar(int*, int, int, int);
-
+void mergeSort(int*, int, int, int*);
+void mesclar(int*, int, int, int, int*);
 
 int main() {
     srand(time(0));
 
-    resolverCasos(10, "MELHOR CASO");
-    
-    resolverCasos(1000, "CASO MEDIO");
-    
-    resolverCasos(10000, "PIOR CASO");
+    resolverCasos(10000, "MELHOR CASO");
+    resolverCasos(1000000, "CASO MEDIO");
+    resolverCasos(100000000, "PIOR CASO");
 
     return 0;
 }
 
-
-// preenche vetor com valores randomicos
-void preencherVetor(int* vetor, int tamanho){
-  for(int i=0 ; i<tamanho ; i++)
-  {
-    vetor[i] = rand() % tamanho + 1;
-  }
+void preencherVetor(int* vetor, int tamanho) {
+    for (int i = 0; i < tamanho; i++) {
+        vetor[i] = rand() % tamanho + 1;
+    }
 }
 
-
-void imprimirArray(int* vetor, int tamanho, string tipoCaso){
+void imprimirArray(int* vetor, int tamanho, string tipoCaso) {
     cout << tipoCaso << ": ";
-    for(int i=0 ; i<tamanho ; i++)
-    {
+    for (int i = 0; i < tamanho; i++) {
         cout << vetor[i] << " ";
     }
     cout << endl << endl;
 }
 
-
-// eu pensei numa funcao generica que pode receber qualquer tipo de caso, e voce pode dizer qual eh o caso que esta resolvendo
-void resolverCasos(int tamanhoDoCaso, string tipoCaso){
-    // aqui eu estou usando ponteiros porque os valores passados para criar o vetor acontecem durante a execução do programa, e por padrao o compilador precisa saber os
-    //valores antes de executar o programa. Sendo assim, por convensao, temos que alocar esse vetor dinamicamente, ligado a um ponteiro
+void resolverCasos(int tamanhoDoCaso, string tipoCaso) {
     int* vetorCaso = new int[tamanhoDoCaso];
+    int* vetorAuxiliar = new int[tamanhoDoCaso]; // criamos um vetor auxiliar do mesmo tamanho. Ele vai diminuir as consultas na heap, deixando o codigo mais rapido. Aqui, consegui sair de milhoes, para apenas n chamadas de resolucao de problema -> 3
 
     preencherVetor(vetorCaso, tamanhoDoCaso);
 
-    auto inicio = std::chrono::high_resolution_clock::now();  // Inicia a medição do tempo
-    mergeSort(vetorCaso, 0, tamanhoDoCaso-1);
-    auto fim = std::chrono::high_resolution_clock::now();  // Finaliza a medição do tempo
-    
+    auto inicio = std::chrono::high_resolution_clock::now();
+    mergeSort(vetorCaso, 0, tamanhoDoCaso - 1, vetorAuxiliar);
+    auto fim = std::chrono::high_resolution_clock::now();
+
     auto duracao = std::chrono::duration_cast<std::chrono::milliseconds>(fim - inicio);
     cout << "Tempo de execucao (" << tipoCaso << "): " << duracao.count() << " ms" << endl;
 
-    imprimirArray(vetorCaso, tamanhoDoCaso, tipoCaso);
+    //  imprimirArray(vetorCaso, tamanhoDoCaso, tipoCaso);  ESSE TRECHO DO CODIGO TA COMENTADO SO PARA VISUALIZAR O TEMPO QUE O ALGORITMO LEVOU PARA CONCLUIR O CENARIO
 
-    // liberar memoria para nao termos memory leak (vazamento de memoria)
+    // liberando memoria
     delete[] vetorCaso;
+    delete[] vetorAuxiliar;  
 }
 
-
-void mergeSort(int vetor[], int inicio, int fim) {
-
-    if (fim > inicio) {
+// algoritmo Merge Sort Recursivo
+void mergeSort(int* vetor, int inicio, int fim, int* vetorAuxiliar) {
+    if (inicio < fim) {
         int meio = inicio + (fim - inicio) / 2;
 
-        // chamada recursiva para a parte esquerda do vetor
-        mergeSort(vetor, inicio, meio);
+        // chamadas recursivas para dividir o vetor
+        mergeSort(vetor, inicio, meio, vetorAuxiliar);
+        mergeSort(vetor, meio + 1, fim, vetorAuxiliar);
 
-        // chamada recursiva para a parte direita do vetor
-        mergeSort(vetor, meio + 1, fim);
-
-        // quando a o mergeSort da esquerda e direita for finalizado, os subarrays serão ordenados aqui, até chegar no vetor colocado no main
-        mesclar(vetor, inicio, meio, fim);
+        // Chamada da função para mesclar os dois subvetores ordenados
+        mesclar(vetor, inicio, meio, fim, vetorAuxiliar);
     }
 }
 
+// funçao para mesclar os dois subvetores ordenados
+void mesclar(int* vetor, int inicio, int meio, int fim, int* vetorAuxiliar) {
+    // copia os elementos do intervalo para o vetor auxiliar
+    for (int i = inicio; i <= fim; i++) {
+        vetorAuxiliar[i] = vetor[i];
+    }
 
-void mesclar(int* vetor, int inicio, int meio, int fim) {
-    int tamanhoEsquerda = meio - inicio + 1;
-    int tamanhoDireita = fim - meio;
+    int i = inicio;     // esse cara aponta para a esquerda do vetor
+    int j = meio + 1;   // esse cara aponta para a direita do vetor
+    int k = inicio;     // ja esse daqui vai ser responsavel pela navegacao do vetorAuxiliar, para podermos copiar os elementos do vetor[i]
 
-    int* ptrEsquerda = new int[tamanhoEsquerda];
-    int* ptrDireita = new int[tamanhoDireita];
-
-    for (int i = 0; i < tamanhoEsquerda; i++)
-        ptrEsquerda[i] = vetor[inicio + i];
-
-    for (int j = 0; j < tamanhoDireita; j++)
-        ptrDireita[j] = vetor[meio + 1 + j];
-
-    int i = 0; // indice inicial do vetor da esquerda
-    int j = 0; // indice inicial do vetor da direita
-    int k = inicio; // indice inicial do vetor mesclado
-
-    // ordenando o vetor original
-    while (i < tamanhoEsquerda && j < tamanhoDireita) {
-        if (ptrEsquerda[i] <= ptrDireita[j]) {
-            vetor[k] = ptrEsquerda[i];
-            i++;
+    // comparacao de elementos. tanto a direita como a esquerda vai ser comparada em um mesmo vetor -> vetorAuxiliar e logo em seguida, depositada no proprio vetor[k]
+    while (i <= meio && j <= fim) {
+        if (vetorAuxiliar[i] <= vetorAuxiliar[j]) {
+            vetor[k++] = vetorAuxiliar[i++];
         } else {
-            vetor[k] = ptrDireita[j];
-            j++;
+            vetor[k++] = vetorAuxiliar[j++];
         }
-        k++;
     }
 
-    // se depois da ordenacao sobrar algum numero que nao foi adicionado tanto da esquerda quanto da direita, ele vai ser adicionado por aqui
-    while (i < tamanhoEsquerda) {
-        vetor[k] = ptrEsquerda[i];
-        i++;
-        k++;
+    // se ainda restarem elementos na parte esquerda, adicionamos ao vetor original
+    while (i <= meio) {
+        vetor[k++] = vetorAuxiliar[i++];
     }
 
-    while (j < tamanhoDireita) {
-        vetor[k] = ptrDireita[j];
-        j++;
-        k++;
+    // se ainda restarem elementos na parte direita, adicionamos ao vetor original
+    while (j <= fim) {
+        vetor[k++] = vetorAuxiliar[j++];
     }
-
-    delete[] ptrEsquerda;
-    delete[] ptrDireita;
 }
-
