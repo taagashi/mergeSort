@@ -14,7 +14,7 @@ void mesclar(int*, int, int, int, int*);
 int main() {
     srand(time(0));
 
-    resolverCasos(10000, "MELHOR CASO");
+    resolverCasos(100, "MELHOR CASO");
     resolverCasos(1000000, "CASO MEDIO");
     resolverCasos(100000000, "PIOR CASO");
 
@@ -48,7 +48,7 @@ void resolverCasos(int tamanhoDoCaso, string tipoCaso) {
     auto duracao = std::chrono::duration_cast<std::chrono::milliseconds>(fim - inicio);
     cout << "Tempo de execucao (" << tipoCaso << "): " << duracao.count() << " ms" << endl;
 
-    //  imprimirArray(vetorCaso, tamanhoDoCaso, tipoCaso);  ESSE TRECHO DO CODIGO TA COMENTADO SO PARA VISUALIZAR O TEMPO QUE O ALGORITMO LEVOU PARA CONCLUIR O CENARIO
+    // imprimirArray(vetorCaso, tamanhoDoCaso, tipoCaso);  // ESSE TRECHO DO CODIGO TA COMENTADO SO PARA VISUALIZAR O TEMPO QUE O ALGORITMO LEVOU PARA CONCLUIR O CENARIO
 
     // liberando memoria
     delete[] vetorCaso;
@@ -58,7 +58,7 @@ void resolverCasos(int tamanhoDoCaso, string tipoCaso) {
 // algoritmo Merge Sort Recursivo
 void mergeSort(int* vetor, int inicio, int fim, int* vetorAuxiliar) {
     if (inicio < fim) {
-        int meio = inicio + (fim - inicio) / 2;
+        int meio = (inicio + fim) / 2;
 
         // chamadas recursivas para dividir o vetor
         mergeSort(vetor, inicio, meio, vetorAuxiliar);
